@@ -98,7 +98,7 @@ class MainWindow(QWidget):
 
     # --- 1. DIO: ZA WARUDO (7 Segundos) ---
     def efecto_za_warudo(self):
-        self.imagen_actual = 'dio.jpg'
+        self.imagen_actual = 'dio.png'
         self.setStyleSheet("background-color: black;")
         self.label.setText("¡¡ZA WARUDO!! El tiempo se ha detenido...")
         self.label.setStyleSheet("font-size: 28px; color: #00FFFF; background-color: transparent;")
@@ -106,7 +106,7 @@ class MainWindow(QWidget):
 
     # --- 2. KIRA: BITES THE DUST (Explosión y reinicio en 4 segundos) ---
     def efecto_bites_the_dust(self):
-        self.imagen_actual = 'kira.jpg'
+        self.imagen_actual = 'kira.png'
         self.poner_fondo(self.imagen_actual)
         self.label.setText("¡KILLER QUEEN! Tercera bomba: ¡Bites the Dust!")
         self.aplicar_estilo_label("#FF69B4") # Rosa Killer Queen
@@ -125,7 +125,7 @@ class MainWindow(QWidget):
         self.label.setStyleSheet("font-size: 24px; color: #FF0000; background-color: transparent;")
 
     def efecto_king_crimson(self):
-        self.imagen_actual = 'diavolo.jpg'
+        self.imagen_actual = 'diavolo.png'
         self.poner_fondo(self.imagen_actual)
         self.label.setText("¡KING CRIMSON!")
         self.aplicar_estilo_label("#FF0055")
@@ -146,7 +146,7 @@ class MainWindow(QWidget):
             self.restaurar_todo()
 
     def efecto_made_in_heaven(self):
-        self.imagen_actual = 'pucci.jpg'
+        self.imagen_actual = 'pucci.png'
         self.poner_fondo(self.imagen_actual)
         self.label.setText("¡El destino ha sido guiado... MADE IN HEAVEN!")
         self.aplicar_estilo_label("#DA70D6") # Violeta Pucci
