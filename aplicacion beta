@@ -4,22 +4,22 @@ from PyQt5.QtGui import QPalette, QBrush, QPixmap
 
 ANCHO, ALTO = 700, 500
 COR_X, COR_Y = 200, 200
-TITULO = 'PyQt5 - Jojo Edition'
-INPUT_TEXT = 'Escribe el conjuro...'
+TITULO = 'PyQt5 - JoJo Villains Edition'
+INPUT_TEXT = 'Invoca un Stand...'
 BTN_TEXT = 'Activar'
-IMG_FONDO = 'dio.png'  # <-- Asegúrate de tener esta imagen en tu carpeta
 
 class MainWindow(QWidget):
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
 
+        self.imagen_actual = 'dio.jpg'  # DIO es el jefe por defecto
         self.config_window()
         self.set_window()
         self.event_handler()
         self.show()
 
     def set_window(self): 
-        # Cajas y botones transparentes o con estilo para que combinen con el fondo
+        # Cajas de texto y botones
         self.input = QLineEdit()
         self.input.setPlaceholderText(INPUT_TEXT)
         self.input.setStyleSheet("font-size: 16px; padding: 5px;")
@@ -27,17 +27,9 @@ class MainWindow(QWidget):
         self.btn = QPushButton(BTN_TEXT)
         self.btn.setStyleSheet("font-size: 16px; padding: 5px; font-weight: bold;")
         
-        self.label = QLabel('¿Eres digno del poder de DIO?')
+        self.label = QLabel('¿Qué Stand dominará esta interfaz?')
         self.label.setAlignment(Qt.AlignCenter)
-        # Texto grande, amarillo y con fondo semi-transparente para que se lea sobre la imagen
-        self.label.setStyleSheet("""
-            font-size: 24px; 
-            font-weight: bold; 
-            color: #FFD700; 
-            background-color: rgba(0, 0, 0, 150); 
-            border-radius: 10px;
-            padding: 10px;
-        """)
+        self.aplicar_estilo_label("#FFD700")  # Dorado por defecto
 
         # Layouts
         controles_layout = QHBoxLayout()
@@ -53,70 +45,129 @@ class MainWindow(QWidget):
     def config_window(self):
         self.setGeometry(COR_X, COR_Y, ANCHO, ALTO)
         self.setWindowTitle(TITULO)
-        self.poner_fondo_dio()
+        self.poner_fondo(self.imagen_actual)
 
-    def poner_fondo_dio(self):
-        """Dibuja la imagen de DIO como fondo de pantalla"""
+    def poner_fondo(self, ruta_imagen):
+        """Cambia el fondo dinámicamente según el villano activo"""
         try:
             palette = QPalette()
-            pixmap = QPixmap(IMG_FONDO).scaled(ANCHO, ALTO, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+            pixmap = QPixmap(ruta_imagen).scaled(ANCHO, ALTO, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
             palette.setBrush(QPalette.Background, QBrush(pixmap))
             self.setPalette(palette)
         except Exception:
-            # Si no encuentra la imagen, pone un fondo gris por defecto para que no crasheé
-            self.setStyleSheet("background-color: #333333;")
+            # Si no encuentra la imagen, usa un gris oscuro de respaldo
+            self.setStyleSheet("background-color: #222222;")
+
+    def aplicar_estilo_label(self, color_texto):
+        """Estilo de texto Jojo genérico con color personalizado"""
+        self.label.setStyleSheet(f"""
+            font-size: 22px; 
+            font-weight: bold; 
+            color: {color_texto}; 
+            background-color: rgba(0, 0, 0, 180); 
+            border-radius: 10px;
+            padding: 12px;
+        """)
 
     def event_handler(self):
-        self.btn.clicked.connect(self.show_text)
-        self.input.returnPressed.connect(self.show_text)
+        self.btn.clicked.connect(self.procesar_conjuro)
+        self.input.returnPressed.connect(self.procesar_conjuro)
 
-    def show_text(self):
-        text = self.input.text().strip()
-        
-        # Verificar si el usuario invoca el poder de Dio (eliminando espacios de más)
-        if text.upper() == "ZA WARUDO":
-            self.activar_za_warudo()
-        elif text != "":
-            self.label.setText(f"DIO dice: {text}")
-            
+    def procesar_conjuro(self):
+        text = self.input.text().strip().upper()
         self.input.clear()
 
-    def activar_za_warudo(self):
-        """Detiene el tiempo: Pantalla negra por 7 segundos"""
-        # 1. Ponemos la pantalla completamente negra cambianzo el estilo
-        self.setStyleSheet("background-color: black;")
-        
-        # Ocultamos los textos y botones temporalmente
+        # Ocultar controles durante los efectos de los Stands
         self.input.hide()
         self.btn.hide()
-        
-        # Cambiamos el texto de la etiqueta principal
+
+        # --- selector de STANDS ---
+        if text == "ZA WARUDO":
+            self.efecto_za_warudo()
+        elif text == "BITES THE DUST":
+            self.efecto_bites_the_dust()
+        elif text == "KING CRIMSON":
+            self.efecto_king_crimson()
+        elif text == "MADE IN HEAVEN":
+            self.efecto_made_in_heaven()
+        else:
+            # Si no es un conjuro, DIO te responde y los controles regresan inmediatamente
+            self.label.setText(f"DIO dice: No tienes el poder de un Stand...")
+            self.input.show()
+            self.btn.show()
+
+    # --- 1. DIO: ZA WARUDO (7 Segundos) ---
+    def efecto_za_warudo(self):
+        self.imagen_actual = 'dio.jpg'
+        self.setStyleSheet("background-color: black;")
         self.label.setText("¡¡ZA WARUDO!! El tiempo se ha detenido...")
-        self.label.setStyleSheet("font-size: 30px; color: #00FFFF; background-color: transparent;") # Efecto color glitch/negativo
+        self.label.setStyleSheet("font-size: 28px; color: #00FFFF; background-color: transparent;")
+        QTimer.singleShot(7000, self.restaurar_todo)
 
-        # 2. Creamos un temporizador que se ejecutará SOLAMENTE UNA VEZ dentro de 7000 milisegundos (7 segundos)
-        QTimer.singleShot(7000, self.restaurar_tiempo)
-
-    def restaurar_tiempo(self):
-        """El tiempo vuelve a fluir: Restauramos todo a la normalidad"""
-        # Quitamos el fondo negro volviendo a aplicar la paleta original
-        self.setStyleSheet("") 
-        self.poner_fondo_dio()
+    # --- 2. KIRA: BITES THE DUST (Explosión y reinicio en 4 segundos) ---
+    def efecto_bites_the_dust(self):
+        self.imagen_actual = 'kira.jpg'
+        self.poner_fondo(self.imagen_actual)
+        self.label.setText("¡KILLER QUEEN! Tercera bomba: ¡Bites the Dust!")
+        self.aplicar_estilo_label("#FF69B4") # Rosa Killer Queen
         
-        # Volvemos a mostrar los controles
+        # Efecto de flash de explosión a los 2 segundos
+        QTimer.singleShot(2000, lambda: self.setStyleSheet("background-color: #FF4500;"))
+        QTimer.singleShot(2100, lambda: self.setStyleSheet("background-color: white;"))
+        
+        # El tiempo retrocede y limpia la pantalla a los 4 segundos
+        QTimer.singleShot(4000, self.restaurar_todo)
+
+    # --- 3. DIAVOLO: KING CRIMSON (Borra el tiempo por 3 segundos) ---
+    def setup_king_crimson_visual(self):
+        self.setStyleSheet("background-color: #4A0000;") # Rojo carmesí espacio borrado
+        self.label.setText("He borrado el tiempo y saltado más allá de él...")
+        self.label.setStyleSheet("font-size: 24px; color: #FF0000; background-color: transparent;")
+
+    def efecto_king_crimson(self):
+        self.imagen_actual = 'diavolo.jpg'
+        self.poner_fondo(self.imagen_actual)
+        self.label.setText("¡KING CRIMSON!")
+        self.aplicar_estilo_label("#FF0055")
+        
+        # Salto temporal abrupto a los 1.5 segundos
+        QTimer.singleShot(1500, self.setup_king_crimson_visual)
+        QTimer.singleShot(4500, self.restaurar_todo)
+
+    # --- 4. PUCCI: MADE IN HEAVEN (Aceleración del universo por 5 segundos) ---
+    def simular_aceleracion(self, paso):
+        """Simula parpadeos veloces del universo acelerando"""
+        if paso < 10:
+            color = "white" if paso % 2 == 0 else "black"
+            self.setStyleSheet(f"background-color: {color};")
+            self.label.setText(f"Aceleración del Universo: x{paso * 1000}!!")
+            QTimer.singleShot(200, lambda: self.simular_aceleracion(paso + 1))
+        else:
+            self.restaurar_todo()
+
+    def efecto_made_in_heaven(self):
+        self.imagen_actual = 'pucci.jpg'
+        self.poner_fondo(self.imagen_actual)
+        self.label.setText("¡El destino ha sido guiado... MADE IN HEAVEN!")
+        self.aplicar_estilo_label("#DA70D6") # Violeta Pucci
+        
+        # Inicia la secuencia de aceleración loca
+        QTimer.singleShot(1500, lambda: self.simular_aceleracion(0))
+
+
+    def restaurar_todo(self):
+        """Regresa la interfaz a su estado normal con el villano correspondiente"""
+        self.setStyleSheet("") # Quita fondos de colores sólidos
+        self.poner_fondo(self.imagen_actual)
+        
         self.input.show()
         self.btn.show()
         
-        # Restauramos el estilo del label
-        self.label.setText("El tiempo vuelve a marchar.")
-        self.label.setStyleSheet("""
-            font-size: 24px; 
-            font-weight: bold; 
-            color: #FFD700; 
-            background-color: rgba(0, 0, 0, 150); 
-            border-radius: 10px;
-            padding: 10px;
-        """)
+        # Colores personalizados para el texto final según quién quedó activo
+        colores = {'dio.jpg': '#FFD700', 'kira.jpg': '#FF69B4', 'diavolo.jpg': '#FF0055', 'pucci.jpg': '#DA70D6'}
+        
+        self.label.setText("El flujo de la realidad ha vuelto a la normalidad.")
+        self.aplicar_estilo_label(colores.get(self.imagen_actual, "#FFFFFF"))
 
 def run():
     app = QApplication([])
