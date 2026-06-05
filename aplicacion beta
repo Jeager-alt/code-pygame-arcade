@@ -1,51 +1,124 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QLabel, QPushButton, QLineEdit
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPalette, QBrush, QPixmap
 
 ANCHO, ALTO = 700, 500
 COR_X, COR_Y = 200, 200
-TITULO = 'Project PyQt5'
-INPUT_TEXT = 'Ingrese Algo...'
-BTN_TEXT = 'Enviar'
+TITULO = 'PyQt5 - Jojo Edition'
+INPUT_TEXT = 'Escribe el conjuro...'
+BTN_TEXT = 'Activar'
+IMG_FONDO = 'dio.png'  # <-- Asegúrate de tener esta imagen en tu carpeta
 
 class MainWindow(QWidget):
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
 
-        self.set_window()
         self.config_window()
+        self.set_window()
         self.event_handler()
         self.show()
 
     def set_window(self): 
-        # FUNCION QUE ESTABLECE EL DISEÑO DE LA APP
-        # widgets
-        self.input = QLineEdit(INPUT_TEXT)
+        # Cajas y botones transparentes o con estilo para que combinen con el fondo
+        self.input = QLineEdit()
+        self.input.setPlaceholderText(INPUT_TEXT)
+        self.input.setStyleSheet("font-size: 16px; padding: 5px;")
+        
         self.btn = QPushButton(BTN_TEXT)
-        self.label = QLabel()
+        self.btn.setStyleSheet("font-size: 16px; padding: 5px; font-weight: bold;")
+        
+        self.label = QLabel('¿Eres digno del poder de DIO?')
+        self.label.setAlignment(Qt.AlignCenter)
+        # Texto grande, amarillo y con fondo semi-transparente para que se lea sobre la imagen
+        self.label.setStyleSheet("""
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #FFD700; 
+            background-color: rgba(0, 0, 0, 150); 
+            border-radius: 10px;
+            padding: 10px;
+        """)
 
-        layout = QHBoxLayout()
-        layout.addWidget(self.input, alignment=Qt.AlignLeft)
-        layout.addWidget(self.btn, alignment=Qt.AlignLeft)
-        layout.addWidget(self.label, alignment=Qt.AlignCenter)
+        # Layouts
+        controles_layout = QHBoxLayout()
+        controles_layout.addWidget(self.input)
+        controles_layout.addWidget(self.btn)
 
-        self.setLayout(layout)
+        layout_principal = QVBoxLayout()
+        layout_principal.addLayout(controles_layout)
+        layout_principal.addWidget(self.label)
+
+        self.setLayout(layout_principal)
 
     def config_window(self):
-        # CONFIGURA PARAMETRO INICIALES DE LA VENTANA
         self.setGeometry(COR_X, COR_Y, ANCHO, ALTO)
         self.setWindowTitle(TITULO)
+        self.poner_fondo_dio()
+
+    def poner_fondo_dio(self):
+        """Dibuja la imagen de DIO como fondo de pantalla"""
+        try:
+            palette = QPalette()
+            pixmap = QPixmap(IMG_FONDO).scaled(ANCHO, ALTO, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+            palette.setBrush(QPalette.Background, QBrush(pixmap))
+            self.setPalette(palette)
+        except Exception:
+            # Si no encuentra la imagen, pone un fondo gris por defecto para que no crasheé
+            self.setStyleSheet("background-color: #333333;")
 
     def event_handler(self):
-        # FUNCION QUE SE ENCARGA DE MANEJAR LA LOGICA
         self.btn.clicked.connect(self.show_text)
+        self.input.returnPressed.connect(self.show_text)
 
-    # AQUI SE DEFINEN TODAS LAS FUNCIONALIDADES DE LA APP
     def show_text(self):
-        text = self.input.text()
-        self.label.setText(text)
+        text = self.input.text().strip()
+        
+        # Verificar si el usuario invoca el poder de Dio (eliminando espacios de más)
+        if text.upper() == "ZA WARUDO":
+            self.activar_za_warudo()
+        elif text != "":
+            self.label.setText(f"DIO dice: {text}")
+            
+        self.input.clear()
+
+    def activar_za_warudo(self):
+        """Detiene el tiempo: Pantalla negra por 7 segundos"""
+        # 1. Ponemos la pantalla completamente negra cambianzo el estilo
+        self.setStyleSheet("background-color: black;")
+        
+        # Ocultamos los textos y botones temporalmente
+        self.input.hide()
+        self.btn.hide()
+        
+        # Cambiamos el texto de la etiqueta principal
+        self.label.setText("¡¡ZA WARUDO!! El tiempo se ha detenido...")
+        self.label.setStyleSheet("font-size: 30px; color: #00FFFF; background-color: transparent;") # Efecto color glitch/negativo
+
+        # 2. Creamos un temporizador que se ejecutará SOLAMENTE UNA VEZ dentro de 7000 milisegundos (7 segundos)
+        QTimer.singleShot(7000, self.restaurar_tiempo)
+
+    def restaurar_tiempo(self):
+        """El tiempo vuelve a fluir: Restauramos todo a la normalidad"""
+        # Quitamos el fondo negro volviendo a aplicar la paleta original
+        self.setStyleSheet("") 
+        self.poner_fondo_dio()
+        
+        # Volvemos a mostrar los controles
+        self.input.show()
+        self.btn.show()
+        
+        # Restauramos el estilo del label
+        self.label.setText("El tiempo vuelve a marchar.")
+        self.label.setStyleSheet("""
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #FFD700; 
+            background-color: rgba(0, 0, 0, 150); 
+            border-radius: 10px;
+            padding: 10px;
+        """)
 
 def run():
-    # CREA Y EJECUTA LA APP
     app = QApplication([])
     main_window = MainWindow()
     app.exec_()
